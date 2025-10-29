@@ -1,3 +1,9 @@
+// TerraSpec — Upgraded Runner with Terraform execution & mock injection
+// ======================================================
+// This file contains a set of Go source files concatenated for convenience.
+// It implements sandboxed module copying, mock injection (as generated .tf files),
+// terraform init/plan/show (-json) invocation, and JSON parsing for outputs
+// to evaluate assertions that reference `output.<name>` or literal values.
 
 // ---------------------------
 // cmd/terraspec/main.go
@@ -10,15 +16,17 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/memetics19/infractest/pkg/runner"
-	"github.com/memetics19/infractest/pkg/reporter"
+	"infractest/pkg/runner"
+	"infractest/pkg/reporter"
 )
 
 func main() {
 	var dir string
 	var jsonOut string
+	var mode string
 	flag.StringVar(&dir, "dir", "tests", "directory containing .tfunittest.hcl test files")
 	flag.StringVar(&jsonOut, "json", "", "path to write JSON report (optional)")
+	flag.StringVar(&mode, "mode", "mock", "test mode: mock | live")
 	flag.Parse()
 
 	abs, err := filepath.Abs(dir)
@@ -27,7 +35,7 @@ func main() {
 		os.Exit(2)
 	}
 
-	results, err := runner.RunDirectory(abs)
+	results, err := runner.RunDirectory(abs, mode)
 	if err != nil {
 		reporter.StdoutReporter(results)
 		fmt.Println("run errors:", err)
@@ -42,13 +50,6 @@ func main() {
 		}
 	}
 }
-
-
-
-
-
-
-
 
 
 
@@ -75,50 +76,9 @@ test "vpc cidr validation" {
   }
 
   assert "cidr matches variable" {
-    actual    = "10.0.0.0/16"
-    expected  = "10.0.0.0/16"
+    actual    = "output.vpc_cidr"
+    expected  = "var.cidr_block"
     condition = "equals"
   }
 }
-*/
-
-// ---------------------------
-// Makefile
-// ---------------------------
-/*****
-BIN := bin/terraspec
-
-build:
-	@echo "Building TerraSpec..."
-	@mkdir -p bin
-	@go build -o $(BIN) ./cmd/terraspec
-
-run:
-	@$(BIN) -dir=tests
-
-fmt:
-	@go fmt ./...
-
-lint:
-	@golangci-lint run
-
-clean:
-	@rm -rf bin
-*****/
-
-// ---------------------------
-// README.md (brief)
-// ---------------------------
-/*
-TerraSpec — Fast, Mockable Unit Testing for Terraform Modules
-
-Quickstart (macOS):
-  brew install go terraform make
-  git clone https://github.com/<you>/terraspec.git
-  cd terraspec
-  go mod tidy
-  make build
-  ./bin/terraspec -dir=tests
-
-Project layout: see comments at top of this file.
 */

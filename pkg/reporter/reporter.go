@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/memetics19/infractest/pkg/runner"
+	"infractest/pkg/runner"	
 	"github.com/fatih/color"
 )
 
@@ -21,12 +21,14 @@ func StdoutReporter(results []runner.TestCaseResult) {
 		}
 		for _, a := range r.Assertions {
 			if a.Passed {
-				fmt.Printf("    - %s: PASS
-", a.Name)
+				fmt.Printf("    - %s: PASS", a.Name)
 			} else {
-				fmt.Printf("    - %s: FAIL — %s
-", a.Name, a.Message)
+				fmt.Printf("    - %s: FAIL — %s", a.Name, a.Message)
 			}
+		}
+		if r.Logs != "" {
+			fmt.Println("    --- logs ---")
+			fmt.Println(r.Logs)
 		}
 	}
 }
